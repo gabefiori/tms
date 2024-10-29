@@ -10,48 +10,50 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPrint(t *testing.T) {
-	tg := New()
-	str := "Hello\nWorld\n"
+func TestTargets(t *testing.T) {
+	t.Run("Print", func(t *testing.T) {
+		tg := New()
+		str := "Hello\nWorld\n"
 
-	tg.Buf = bytes.NewBufferString(str)
+		tg.Buf = bytes.NewBufferString(str)
 
-	buf := new(bytes.Buffer)
-	err := tg.Print(buf)
+		buf := new(bytes.Buffer)
+		err := tg.Print(buf)
 
-	assert.NoError(t, err)
-	assert.Equal(t, str, buf.String())
-}
+		assert.NoError(t, err)
+		assert.Equal(t, str, buf.String())
+	})
 
-func TestFilter(t *testing.T) {
-	tg := New()
-	tg.Buf = bytes.NewBufferString("Hello\nWorld\nTest\n")
+	t.Run("Filter", func(t *testing.T) {
+		tg := New()
+		tg.Buf = bytes.NewBufferString("Hello\nWorld\nTest\n")
 
-	tg.Filter("World")
-	assert.Equal(t, "World\n", tg.Buf.String())
-}
+		tg.Filter("World")
+		assert.Equal(t, "World\n", tg.Buf.String())
+	})
 
-func TestCollect(t *testing.T) {
-	tempDir := t.TempDir()
+	t.Run("Collect", func(t *testing.T) {
+		tempDir := t.TempDir()
 
-	subDir1 := filepath.Join(tempDir, "subdir1")
-	subDir2 := filepath.Join(tempDir, "subdir2")
-	subDir3 := filepath.Join(tempDir, "subdir3")
+		subDir1 := filepath.Join(tempDir, "subdir1")
+		subDir2 := filepath.Join(tempDir, "subdir2")
+		subDir3 := filepath.Join(tempDir, "subdir3")
 
-	assert.NoError(t, os.MkdirAll(subDir1, 0755))
-	assert.NoError(t, os.MkdirAll(subDir2, 0755))
-	assert.NoError(t, os.MkdirAll(subDir3, 0755))
+		assert.NoError(t, os.MkdirAll(subDir1, 0755))
+		assert.NoError(t, os.MkdirAll(subDir2, 0755))
+		assert.NoError(t, os.MkdirAll(subDir3, 0755))
 
-	input := []InputTarget{
-		{Path: tempDir, Depth: 1},
-		{Path: tempDir, Depth: 2},
-	}
+		input := []InputTarget{
+			{Path: tempDir, Depth: 1},
+			{Path: tempDir, Depth: 2},
+		}
 
-	tg := New()
+		tg := New()
 
-	err := tg.Collect(input)
-	assert.NoError(t, err)
+		err := tg.Collect(input)
+		assert.NoError(t, err)
 
-	expectedOutput := fmt.Sprintf("%s\n%s\n%s\n%s", subDir3, subDir2, subDir1, tempDir)
-	assert.Equal(t, expectedOutput, tg.Buf.String())
+		expectedOutput := fmt.Sprintf("%s\n%s\n%s\n%s", subDir3, subDir2, subDir1, tempDir)
+		assert.Equal(t, expectedOutput, tg.Buf.String())
+	})
 }
